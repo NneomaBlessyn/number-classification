@@ -86,6 +86,9 @@ public class NumberServiceImpl implements NumberService {
     }
 
     private boolean checkArmstrong(int n) {
+        if(n < 0){
+            return false;
+        }
         int temp = Math.abs(n);
         String numStr = String.valueOf(temp);
         int length = numStr.length();
