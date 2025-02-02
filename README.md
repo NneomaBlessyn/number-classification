@@ -13,7 +13,7 @@ A simple API that checks if a number is prime, perfect, armstrong, odd/even, sum
 ### Installation
 1. **Clone** the repo:
    ```bash
-   git clone https://github.com/yourname/number-classification.git
+   git clone https://github.com/NneomaBlessyn/number-classification.git
 2. **Go into the project folder:**
     ```bash
     cd number-classification
