@@ -72,5 +72,15 @@ http://localhost:8098/swagger-ui/index.html
 ## Deployment
 The API is deployed on Heroku at:
 ```bash
-https://number-classification.herokuapp.com/
+https://number-classification-4790cae77305.herokuapp.com
+```
+
+Classify a number (Example 371):
+```bash
+https://number-classification-4790cae77305.herokuapp.com/api/classify-number?number=371
+```
+
+Swagger UI:
+```bash
+https://number-classification-4790cae77305.herokuapp.com/swagger-ui/index.html
 ```
