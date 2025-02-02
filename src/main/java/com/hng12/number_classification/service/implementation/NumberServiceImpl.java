@@ -22,10 +22,14 @@ public class NumberServiceImpl implements NumberService {
     @Value("${fun-fact.base-url}")
     private String funFactBaseUrl;
 
+    @Value("${math.type:math}")
+    private String mathType;
+
     private final RestTemplate restTemplate;
 
     @Override
     public ClassifyNumberResponse classifyNumber(String number) {
+        log.info("Classifying number: {}", number);
         if(StringUtils.isBlank(number) || !number.matches("^-?\\d+$")) {
             throw new ClassifyNumberException(number, HttpStatus.BAD_REQUEST);
         }
@@ -46,17 +50,10 @@ public class NumberServiceImpl implements NumberService {
         boolean isEven = (number % 2 == 0);
 
         List<String> properties = new ArrayList<>();
-        if (isArmstrong && isEven) {
+        if (isArmstrong) {
             properties.add("armstrong");
-            properties.add("even");
-        } else if (isArmstrong) {
-            properties.add("armstrong");
-            properties.add("odd");
-        } else if (isEven) {
-            properties.add("even");
-        } else {
-            properties.add("odd");
         }
+        properties.add(isEven ? "even" : "odd");
 
         int digitSum = calculateDigitSum(number);
         String funFact = fetchFunFact(number);
@@ -114,7 +111,7 @@ public class NumberServiceImpl implements NumberService {
 
     private String fetchFunFact(int number) {
         StringBuilder url = new StringBuilder(funFactBaseUrl);
-        url.append(number).append("/math");
+        url.append(number).append('/').append(mathType);
         try {
             return restTemplate.getForObject(url.toString(), String.class);
         } catch (Exception e) {
