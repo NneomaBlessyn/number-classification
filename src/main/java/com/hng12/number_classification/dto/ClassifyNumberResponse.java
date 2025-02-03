@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
-import java.util.Set;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -19,7 +19,7 @@ public class ClassifyNumberResponse {
     private boolean isPerfect;
 
     @JsonProperty("properties")
-    private Set<String> properties;
+    private List<String> properties;
 
     @JsonProperty("digit_sum")
     private int digitSum;

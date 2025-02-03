@@ -6,13 +6,14 @@ import com.hng12.number_classification.service.NumberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.math3.primes.Primes;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -22,10 +23,14 @@ public class NumberServiceImpl implements NumberService {
     @Value("${fun-fact.base-url}")
     private String funFactBaseUrl;
 
+    @Value("${math.type:math}")
+    private String mathType;
+
     private final RestTemplate restTemplate;
 
     @Override
     public ClassifyNumberResponse classifyNumber(String number) {
+        log.info("Classifying number: {}", number);
         if(StringUtils.isBlank(number) || !number.matches("^-?\\d+$")) {
             throw new ClassifyNumberException(number, HttpStatus.BAD_REQUEST);
         }
@@ -40,23 +45,23 @@ public class NumberServiceImpl implements NumberService {
     }
 
     private ClassifyNumberResponse classifyNumber(int number) {
-        boolean isPrime = checkPrime(number);
+        boolean isPrime = Primes.isPrime(number);
         boolean isPerfect = checkPerfect(number);
         boolean isArmstrong = checkArmstrong(number);
         boolean isEven = (number % 2 == 0);
 
-        Set<String> properties = new HashSet<>();
-        if (isArmstrong && isEven) {
-            properties.add("armstrong");
-            properties.add("even");
-        } else if (isArmstrong) {
-            properties.add("armstrong");
-            properties.add("odd");
-        } else if (isEven) {
-            properties.add("even");
-        } else {
-            properties.add("odd");
+        List<String> properties = new ArrayList<>();
+        // added prime, perfect, armstrong, even/odd properties
+        if (isPrime) {
+            properties.add("prime");
         }
+        if (isPerfect) {
+            properties.add("perfect");
+        }
+        if (isArmstrong) {
+            properties.add("armstrong");
+        }
+        properties.add(isEven ? "even" : "odd");
 
         int digitSum = calculateDigitSum(number);
         String funFact = fetchFunFact(number);
@@ -64,42 +69,37 @@ public class NumberServiceImpl implements NumberService {
         return new ClassifyNumberResponse(number, isPrime, isPerfect, properties, digitSum, funFact);
     }
 
-    private boolean checkPrime(int n) {
-        if (n <= 1) return false;
-        if (n <= 3) return true;
-        if (n % 2 == 0 || n % 3 == 0) return false;
-        int i = 5;
-        while (i * i <= n) {
-            if (n % i == 0 || n % (i + 2) == 0) return false;
-            i += 6;
+    private boolean checkPerfect(int number) {
+        if (number < 2) {
+            return false;
         }
-        return true;
-    }
 
-    private boolean checkPerfect(int n) {
-        if (n < 2) return false;
         int sum = 1;
-        for (int i = 2; i <= Math.sqrt(n); i++) {
-            if (n % i == 0) {
+        for (int i = 2; i <= Math.sqrt(number); i++) {
+            if (number % i == 0) {
                 sum += i;
-                if (i != n / i) sum += (n / i);
+
+                int otherDivisor = number / i;
+                if (otherDivisor != i) {
+                    sum += otherDivisor;
+                }
             }
         }
-        return sum == n;
+        return sum == number;
     }
 
-    private boolean checkArmstrong(int n) {
-        int temp = Math.abs(n);
-        String numStr = String.valueOf(temp);
-        int length = numStr.length();
-
+    private boolean checkArmstrong(int number) {
+        int numDigits = String.valueOf(number).length();
         int sum = 0;
+        int temp = number;
+
         while (temp > 0) {
             int digit = temp % 10;
-            sum += Math.pow(digit, length);
+            sum += (int) Math.pow(digit, numDigits);
             temp /= 10;
         }
-        return sum == Integer.parseInt(numStr);
+
+        return sum == number;
     }
 
     private int calculateDigitSum(int n) {
@@ -114,7 +114,7 @@ public class NumberServiceImpl implements NumberService {
 
     private String fetchFunFact(int number) {
         StringBuilder url = new StringBuilder(funFactBaseUrl);
-        url.append(number).append("/math");
+        url.append(number).append('/').append(mathType);
         try {
             return restTemplate.getForObject(url.toString(), String.class);
         } catch (Exception e) {
