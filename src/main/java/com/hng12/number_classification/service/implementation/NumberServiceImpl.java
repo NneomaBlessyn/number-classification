@@ -6,6 +6,7 @@ import com.hng12.number_classification.service.NumberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.math3.primes.Primes;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -44,7 +45,7 @@ public class NumberServiceImpl implements NumberService {
     }
 
     private ClassifyNumberResponse classifyNumber(int number) {
-        boolean isPrime = checkPrime(number);
+        boolean isPrime = Primes.isPrime(number);
         boolean isPerfect = checkPerfect(number);
         boolean isArmstrong = checkArmstrong(number);
         boolean isEven = (number % 2 == 0);
@@ -61,45 +62,37 @@ public class NumberServiceImpl implements NumberService {
         return new ClassifyNumberResponse(number, isPrime, isPerfect, properties, digitSum, funFact);
     }
 
-    private boolean checkPrime(int n) {
-        if (n <= 1) return false;
-        if (n <= 3) return true;
-        if (n % 2 == 0 || n % 3 == 0) return false;
-        int i = 5;
-        while (i * i <= n) {
-            if (n % i == 0 || n % (i + 2) == 0) return false;
-            i += 6;
-        }
-        return true;
-    }
-
-    private boolean checkPerfect(int n) {
-        if (n < 2) return false;
-        int sum = 1;
-        for (int i = 2; i <= Math.sqrt(n); i++) {
-            if (n % i == 0) {
-                sum += i;
-                if (i != n / i) sum += (n / i);
-            }
-        }
-        return sum == n;
-    }
-
-    private boolean checkArmstrong(int n) {
-        if(n <= 0){
+    private boolean checkPerfect(int number) {
+        if (number < 2) {
             return false;
         }
-        int temp = Math.abs(n);
-        String numStr = String.valueOf(temp);
-        int length = numStr.length();
 
+        int sum = 1;
+        for (int i = 2; i <= Math.sqrt(number); i++) {
+            if (number % i == 0) {
+                sum += i;
+
+                int otherDivisor = number / i;
+                if (otherDivisor != i) {
+                    sum += otherDivisor;
+                }
+            }
+        }
+        return sum == number;
+    }
+
+    private boolean checkArmstrong(int number) {
+        int numDigits = String.valueOf(number).length();
         int sum = 0;
+        int temp = number;
+
         while (temp > 0) {
             int digit = temp % 10;
-            sum += Math.pow(digit, length);
+            sum += (int) Math.pow(digit, numDigits);
             temp /= 10;
         }
-        return sum == Integer.parseInt(numStr);
+
+        return sum == number;
     }
 
     private int calculateDigitSum(int n) {
