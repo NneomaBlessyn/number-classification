@@ -51,6 +51,13 @@ public class NumberServiceImpl implements NumberService {
         boolean isEven = (number % 2 == 0);
 
         List<String> properties = new ArrayList<>();
+        // added prime, perfect, armstrong, even/odd properties
+        if (isPrime) {
+            properties.add("prime");
+        }
+        if (isPerfect) {
+            properties.add("perfect");
+        }
         if (isArmstrong) {
             properties.add("armstrong");
         }
